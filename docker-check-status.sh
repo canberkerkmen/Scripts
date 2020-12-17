@@ -3,10 +3,6 @@
 SERVICE_NAME=$1
 SERVICE_VERSION=$2
 
-PROCESS_TIME=$((SECONDS+60))
-SLEEP_TIME=5
-SUCCESS=false
-
 SWARM_SERVICE_NAME=$(docker service ls --format '{{.Name}} {{.Image}}' | grep -i ${SERVICE_NAME}:${SERVICE_VERSION} | awk '{print $1}');
 
 echo "Checking status of ${SERVICE_NAME} with service name in swarm is ${SWARM_SERVICE_NAME}"
@@ -25,6 +21,10 @@ else
     SERVICE_INSTANCE_COUNT=$(docker service inspect --pretty ${SWARM_SERVICE_NAME} | grep -i "Replicas" | awk '{print $2}')
     echo "Service mode is replicated with ${SERVICE_INSTANCE_COUNT} replicas"
 fi
+
+PROCESS_TIME=$((SECONDS+60))
+SLEEP_TIME=5
+SUCCESS=false
 
 while [ $SECONDS -lt ${PROCESS_TIME} ]; do
     RUNNING_SERVICE_INSTANCE_COUNT=$(docker service ps ${SWARM_SERVICE_NAME} --format '{{.CurrentState}} {{.Image}}' | grep Running.*${SERVICE_NAME}:${SERVICE_VERSION} -c)
